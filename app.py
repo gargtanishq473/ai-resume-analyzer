@@ -1,43 +1,159 @@
 import streamlit as st
 import pdfplumber
 import sqlite3
+import hashlib
+import os
+import io
 
-# =========================
-# PAGE CONFIG
-# =========================
-st.set_page_config(
-    page_title="AI Resume Analyzer",
-    page_icon="💼",
-    layout="wide"
-)
+st.set_page_config(page_title="AI Resume Analyzer", page_icon="💼", layout="wide")
 
-# =========================
-# DATABASE
-# =========================
+# ================= DATABASE =================
 conn = sqlite3.connect("users.db", check_same_thread=False)
 c = conn.cursor()
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS users(
     username TEXT,
-    email TEXT,
+    email TEXT UNIQUE,
     password TEXT
 )
 """)
 conn.commit()
 
-# =========================
-# HELPER FUNCTIONS
-# =========================
-def get_section(text, start_keywords, end_keywords):
+# ================= SESSION =================
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+if "user_email" not in st.session_state:
+    st.session_state.user_email = ""
+
+# ================= PASSWORD SECURITY =================
+def hash_password(password):
+    salt = "ai_resume_analyzer_secret_salt"
+    return hashlib.sha256((password + salt).encode()).hexdigest()
+
+# ================= THEME =================
+dark_bg = """
+background:
+radial-gradient(circle at top left, rgba(56,189,248,0.20), transparent 35%),
+radial-gradient(circle at bottom right, rgba(168,85,247,0.18), transparent 35%),
+linear-gradient(135deg,#020617,#0f172a,#111827);
+color:white;
+"""
+
+light_bg = """
+background:
+linear-gradient(135deg,#f8fafc,#e0f2fe,#f1f5f9);
+color:#0f172a;
+"""
+
+bg = dark_bg if st.session_state.theme == "dark" else light_bg
+
+st.markdown(f"""
+<style>
+.stApp {{
+    {bg}
+    transition: all 0.5s ease;
+}}
+
+.hero-title {{
+    font-size:72px;
+    font-weight:900;
+    color:#22d3ee;
+    text-align:center;
+    text-shadow:0 0 25px rgba(34,211,238,0.7);
+}}
+
+.hero-sub {{
+    font-size:24px;
+    color:#cbd5e1;
+    text-align:center;
+}}
+
+.card {{
+    background:rgba(255,255,255,0.07);
+    padding:30px;
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,0.12);
+    margin-top:20px;
+}}
+
+.login-card {{
+    width:60%;
+    margin:auto;
+    padding:40px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.07);
+}}
+
+.section-title {{
+    font-size:34px;
+    font-weight:800;
+    color:#22d3ee;
+    margin-top:25px;
+    margin-bottom:15px;
+}}
+
+.info-box {{
+    background:rgba(255,255,255,0.07);
+    padding:18px;
+    border-radius:15px;
+    border-left:5px solid #22d3ee;
+    margin-bottom:15px;
+}}
+
+.skill-box {{
+    background:linear-gradient(90deg,#06b6d4,#8b5cf6);
+    padding:12px;
+    border-radius:12px;
+    color:white;
+    margin:8px 0;
+    font-weight:700;
+}}
+
+.score-box {{
+    background:linear-gradient(90deg,#2563eb,#06b6d4);
+    padding:25px;
+    border-radius:18px;
+    text-align:center;
+    font-size:32px;
+    font-weight:900;
+    color:white;
+}}
+
+.stButton>button {{
+    background:linear-gradient(90deg,#06b6d4,#8b5cf6);
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:10px 20px;
+    font-weight:800;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+# ================= FUNCTIONS =================
+def read_pdf(file):
+    text = ""
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+    return text
+
+def get_section(text, start_keywords, end_keywords):
     text_lower = text.lower()
     start_index = -1
 
     for keyword in start_keywords:
-
         index = text_lower.find(keyword.lower())
-
         if index != -1:
             start_index = index
             break
@@ -48,169 +164,81 @@ def get_section(text, start_keywords, end_keywords):
     end_index = len(text)
 
     for keyword in end_keywords:
-
         index = text_lower.find(keyword.lower(), start_index + 1)
-
         if index != -1:
             end_index = min(end_index, index)
 
     return text[start_index:end_index].strip()
 
-
 def clean_lines(section_text):
-
     lines = section_text.split("\n")
     cleaned = []
 
     for line in lines:
-
         line = line.strip()
-
         if line and len(line) > 3:
             cleaned.append(line)
 
     return cleaned[:8]
 
+def make_report_text(name, score, role, skills, rank, tips):
+    return f"""
+AI Resume Analyzer Report
 
-# =========================
-# SESSION STATE
-# =========================
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+Candidate Name: {name}
+ATS Score: {score}/100
+Resume Rank: {rank}
+Predicted Role: {role}
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
+Skills Found:
+{", ".join(skills) if skills else "No major skills found"}
 
-if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+Improvement Tips:
+{tips}
 
-# =========================
-# THEME
-# =========================
-dark_bg = """
-background:
-radial-gradient(circle at top left, rgba(56,189,248,0.25), transparent 35%),
-radial-gradient(circle at bottom right, rgba(168,85,247,0.22), transparent 35%),
-linear-gradient(135deg, #020617, #0f172a, #111827);
-color: white;
+Generated by AI Resume Analyzer
 """
 
-light_bg = """
-background:
-linear-gradient(135deg, #f8fafc, #e0f2fe, #f1f5f9);
-color: #0f172a;
-"""
+def get_rank(score):
+    if score >= 85:
+        return "Advanced"
+    elif score >= 65:
+        return "Intermediate"
+    else:
+        return "Beginner"
 
-bg = dark_bg if st.session_state.theme == "dark" else light_bg
+# ================= DATA =================
+skills = [
+    "Python", "Java", "C++", "SQL", "JavaScript", "React",
+    "Node.js", "Cybersecurity", "Machine Learning", "AI",
+    "HTML", "CSS", "MongoDB", "AWS", "Flask", "Django"
+]
 
-# =========================
-# CSS
-# =========================
-st.markdown(f"""
-<style>
+question_bank = {
+    "Python": {
+        "Beginner": ["What is Python?", "What are lists and tuples?", "What is a function?"],
+        "Intermediate": ["Explain OOP in Python.", "What is exception handling?", "What are decorators?"],
+        "Advanced": ["Explain generators.", "Explain multithreading vs multiprocessing.", "How does memory management work in Python?"]
+    },
+    "SQL": {
+        "Beginner": ["What is SQL?", "What is a primary key?", "What is SELECT query?"],
+        "Intermediate": ["Explain joins.", "What is normalization?", "Difference between WHERE and HAVING?"],
+        "Advanced": ["Explain indexing.", "What is query optimization?", "Explain ACID properties."]
+    },
+    "React": {
+        "Beginner": ["What is React?", "What are components?", "What is JSX?"],
+        "Intermediate": ["Difference between props and state?", "What is useState?", "Explain useEffect."],
+        "Advanced": ["Explain React lifecycle.", "What is memoization?", "How to optimize React performance?"]
+    },
+    "Cybersecurity": {
+        "Beginner": ["What is phishing?", "What is malware?", "What is firewall?"],
+        "Intermediate": ["What is encryption?", "Explain hashing.", "What is vulnerability assessment?"],
+        "Advanced": ["Explain penetration testing.", "What is zero trust security?", "Explain IDS vs IPS."]
+    }
+}
 
-.stApp {{
-    {bg}
-}}
-
-.hero {{
-    text-align: center;
-    padding: 110px 20px 70px 20px;
-}}
-
-.hero-title {{
-    font-size: 65px;
-    font-weight: 900;
-    color: #22d3ee;
-    text-shadow: 0 0 25px rgba(34,211,238,0.7);
-}}
-
-.hero-sub {{
-    font-size: 22px;
-    color: #cbd5e1;
-    margin-top: 15px;
-}}
-
-.card {{
-    background: rgba(255,255,255,0.09);
-    padding: 30px;
-    border-radius: 22px;
-    border: 1px solid rgba(255,255,255,0.14);
-    box-shadow: 0 10px 35px rgba(0,0,0,0.35);
-    backdrop-filter: blur(14px);
-    margin-top: 25px;
-}}
-
-.login-card {{
-    background: rgba(255,255,255,0.09);
-    padding: 35px;
-    border-radius: 22px;
-    width: 60%;
-    margin: auto;
-    margin-top: 50px;
-    border: 1px solid rgba(34,211,238,0.35);
-    box-shadow: 0 0 35px rgba(34,211,238,0.18);
-}}
-
-.section-title {{
-    color: #22d3ee;
-    font-size: 30px;
-    font-weight: 800;
-    margin-top: 25px;
-    margin-bottom: 15px;
-}}
-
-.skill-box {{
-    background: linear-gradient(90deg, #06b6d4, #8b5cf6);
-    color: white;
-    padding: 13px;
-    border-radius: 12px;
-    margin: 8px 0;
-    font-weight: 700;
-}}
-
-.info-box {{
-    background: rgba(255,255,255,0.08);
-    padding: 18px;
-    border-radius: 14px;
-    border-left: 5px solid #22d3ee;
-    margin-bottom: 15px;
-}}
-
-.score-box {{
-    background: linear-gradient(90deg, #2563eb, #06b6d4);
-    padding: 22px;
-    border-radius: 16px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: 900;
-    color: white;
-    margin: 20px 0;
-}}
-
-.stButton>button {{
-    background: linear-gradient(90deg, #06b6d4, #8b5cf6);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-weight: 800;
-}}
-
-[data-testid="stFileUploader"] {{
-    background: rgba(255,255,255,0.08);
-    border: 2px dashed #22d3ee;
-    border-radius: 18px;
-    padding: 20px;
-}}
-
-</style>
-""", unsafe_allow_html=True)
-
-# =========================
-# NAVBAR
-# =========================
-col1, col2, col3, col4, col5 = st.columns([4, 1, 1, 1, 1])
+# ================= NAVBAR =================
+col1, col2, col3, col4, col5, col6, col7 = st.columns([3,1,1,1,1.4,1.5,1])
 
 with col1:
     st.markdown("## 💼 AI RESUME ANALYZER")
@@ -228,93 +256,87 @@ with col4:
         st.session_state.page = "Help"
 
 with col5:
+    if st.button("Job Matcher"):
+        st.session_state.page = "Job Matcher"
+
+with col6:
+    if st.button("Interview Qs"):
+        st.session_state.page = "Interview"
+
+with col7:
     if st.button("☀️/🌙"):
-        st.session_state.theme = (
-            "light" if st.session_state.theme == "dark" else "dark"
-        )
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
 
-# =========================
-# HOME PAGE
-# =========================
+# ================= HOME =================
 if st.session_state.page == "Home":
+    st.markdown("<div class='hero-title'>AI RESUME ANALYZER</div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero-sub'>Analyze Resume • Match Jobs • Generate Interview Questions</div>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="hero">
-        <div class="hero-title">AI RESUME ANALYZER</div>
-        <div class="hero-sub">
-            Analyze resume, calculate ATS score and improve your resume.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.write("")
+    st.write("")
+
+    colA, colB, colC = st.columns(3)
+
+    with colA:
+        st.markdown("<div class='info-box'><h3>📊 Resume Analysis</h3><p>ATS score, skills, projects, education and certificates.</p></div>", unsafe_allow_html=True)
+
+    with colB:
+        st.markdown("<div class='info-box'><h3>🎯 Job Matching</h3><p>Compare resume with job description and find missing skills.</p></div>", unsafe_allow_html=True)
+
+    with colC:
+        st.markdown("<div class='info-box'><h3>🎤 Interview Prep</h3><p>Generate beginner, intermediate and advanced questions.</p></div>", unsafe_allow_html=True)
 
     center = st.columns([2,1,2])
-
     with center[1]:
-
         if st.button("ACCESS ANALYZER"):
             st.session_state.page = "Login"
             st.rerun()
 
-# =========================
-# ABOUT PAGE
-# =========================
+# ================= ABOUT =================
 elif st.session_state.page == "About":
-
     st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">About Developer</div>', unsafe_allow_html=True)
+    st.write("👨‍💻 Developer Name: Tanishq Garg")
+    st.write("🎓 Computer Science & Artificial Intelligence")
 
-    st.markdown(
-        '<div class="section-title">About Developer</div>',
-        unsafe_allow_html=True
-    )
-
-    st.write("Name: Tanishq Garg")
-    st.write("Field: Computer Science & Artificial Intelligence")
-
-    st.markdown(
-        '<div class="section-title">About Website</div>',
-        unsafe_allow_html=True
-    )
-
+    st.markdown('<div class="section-title">About Website</div>', unsafe_allow_html=True)
     st.write("""
-    This website analyzes resumes using AI techniques.
-    It detects skills, education, certificates, projects,
-    experience and gives ATS score with improvement tips.
+    This website can:
+    - Analyze resumes
+    - Generate ATS score
+    - Predict job role
+    - Match resume with job description
+    - Generate interview questions
+    - Download analysis report
+    - Rank resume level
     """)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================
-# HELP PAGE
-# =========================
+# ================= HELP =================
 elif st.session_state.page == "Help":
-
     st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">How Website Works</div>', unsafe_allow_html=True)
+    st.write("""
+    1. Create account or login  
+    2. Upload resume PDF  
+    3. AI reads resume text  
+    4. Website detects skills, education, certificates, projects and experience  
+    5. ATS score and resume rank are generated  
+    6. You can download report  
+    7. Use Job Matcher and Interview Questions features  
+    """)
+    st.markdown('<div class="section-title">Support Contact</div>', unsafe_allow_html=True)
+    st.write("📞 9460460765")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="section-title">How This Website Works</div>',
-        unsafe_allow_html=True
-    )
-
-    st.write("1. Create account or login.")
-    st.write("2. Upload your resume PDF.")
-    st.write("3. Website reads resume text.")
-    st.write("4. AI detects skills and sections.")
-    st.write("5. ATS score and improvement tips are generated.")
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================
-# LOGIN PAGE
-# =========================
+# ================= LOGIN =================
 elif st.session_state.page == "Login":
-
     st.markdown('<div class="login-card">', unsafe_allow_html=True)
 
     option = st.radio("Choose Option", ["Login", "Signup"])
 
     if option == "Signup":
-
         st.subheader("Create Account")
 
         new_user = st.text_input("Username")
@@ -322,491 +344,405 @@ elif st.session_state.page == "Login":
         new_password = st.text_input("Password", type="password")
 
         if st.button("Signup"):
+            hashed = hash_password(new_password)
 
-            c.execute(
-                "SELECT * FROM users WHERE email=?",
-                (new_email,)
-            )
-
-            data = c.fetchone()
-
-            if data:
-                st.error("Email already registered")
-
-            else:
-
+            try:
                 c.execute(
                     "INSERT INTO users(username,email,password) VALUES(?,?,?)",
-                    (new_user, new_email, new_password)
+                    (new_user, new_email, hashed)
                 )
-
                 conn.commit()
-
                 st.success("Account Created Successfully")
+            except:
+                st.error("Email already exists")
 
     else:
-
         st.subheader("Login")
 
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
 
         if st.button("Login"):
+            hashed = hash_password(password)
 
             c.execute(
                 "SELECT * FROM users WHERE email=? AND password=?",
-                (email, password)
+                (email, hashed)
             )
-
             data = c.fetchone()
 
             if data:
-
                 st.session_state.logged_in = True
-                st.session_state.page = "Analyzer"
-
+                st.session_state.user_email = email
+                st.session_state.page = "Dashboard"
                 st.success("Login Successful")
                 st.rerun()
-
             else:
                 st.error("Invalid Email or Password")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================
-# ANALYZER PAGE
-# =========================
-elif st.session_state.page == "Analyzer":
-
+# ================= DASHBOARD =================
+elif st.session_state.page == "Dashboard":
     if not st.session_state.logged_in:
+        st.session_state.page = "Login"
+        st.rerun()
 
+    st.markdown('<div class="section-title">👤 User Dashboard</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="info-box">
+    Welcome: <b>{st.session_state.user_email}</b><br><br>
+    Choose any feature from below:
+    </div>
+    """, unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        if st.button("Open Resume Analyzer"):
+            st.session_state.page = "Analyzer"
+            st.rerun()
+
+    with c2:
+        if st.button("Open Job Matcher"):
+            st.session_state.page = "Job Matcher"
+            st.rerun()
+
+    with c3:
+        if st.button("Open Interview Prep"):
+            st.session_state.page = "Interview"
+            st.rerun()
+
+# ================= ANALYZER =================
+elif st.session_state.page == "Analyzer":
+    if not st.session_state.logged_in:
         st.warning("Please Login First")
         st.session_state.page = "Login"
         st.rerun()
 
-    st.markdown("## Upload Resume & Get AI Analysis")
+    st.markdown("## 📄 Upload Resume")
 
     if st.button("Logout"):
-
         st.session_state.logged_in = False
         st.session_state.page = "Home"
         st.rerun()
 
-    uploaded_file = st.file_uploader(
-        "📄 Upload Your Resume",
-        type=["pdf"]
-    )
+    uploaded_file = st.file_uploader("Upload Resume PDF", type=["pdf"])
 
     if uploaded_file is not None:
 
-        text = ""
-
-        with pdfplumber.open(uploaded_file) as pdf:
-
-            for page in pdf.pages:
-
-                page_text = page.extract_text()
-
-                if page_text:
-                    text += page_text + "\n"
+        with st.spinner("Analyzing Resume... Please wait"):
+            text = read_pdf(uploaded_file)
 
         st.markdown('<div class="card">', unsafe_allow_html=True)
 
         lines = text.split("\n")
-
         candidate_name = lines[0] if lines else "Candidate"
 
-        # =========================
-        # NAME
-        # =========================
-        st.markdown(
-            '<div class="section-title">👤 Candidate Name</div>',
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            f'<div class="info-box">{candidate_name}</div>',
-            unsafe_allow_html=True
-        )
-
-        # =========================
-        # SKILLS
-        # =========================
-        skills = [
-            "Python",
-            "Java",
-            "C++",
-            "SQL",
-            "JavaScript",
-            "React",
-            "Node.js",
-            "Cybersecurity",
-            "Machine Learning",
-            "AI",
-            "HTML",
-            "CSS",
-            "MongoDB",
-            "Git",
-            "AWS",
-            "Data Science"
-        ]
-
         found_skills = []
-
         for skill in skills:
-
             if skill.lower() in text.lower():
                 found_skills.append(skill)
 
-        st.markdown(
-            '<div class="section-title">🚀 Skills Found</div>',
-            unsafe_allow_html=True
-        )
-
-        if found_skills:
-
-            for skill in found_skills:
-
-                st.markdown(
-                    f'<div class="skill-box">{skill}</div>',
-                    unsafe_allow_html=True
-                )
-
-        else:
-            st.warning("No Skills Found")
-
-        # =========================
-        # EXPERIENCE
-        # =========================
-        st.markdown(
-            '<div class="section-title">💼 Experience</div>',
-            unsafe_allow_html=True
-        )
-
-        experience_text = get_section(
-            text,
-            ["experience", "work experience", "internship"],
-            ["education", "skills", "projects", "certificates"]
-        )
-
-        experience_lines = clean_lines(experience_text)
-
-        if experience_lines:
-
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-
-            for line in experience_lines:
-
-                if line.lower() not in [
-                    "experience",
-                    "work experience"
-                ]:
-                    st.write("•", line)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        else:
-            st.warning("No Proper Experience Details Found")
-
-        # =========================
-        # REALISTIC ATS SCORE
-        # =========================
-        score = 35
-
-        if len(found_skills) >= 8:
-            score += 20
-
-        elif len(found_skills) >= 5:
-            score += 15
-
-        elif len(found_skills) >= 3:
-            score += 10
-
-        else:
-            score += 5
-
-        # PROJECTS
-        project_text = get_section(
-            text,
-            ["projects", "project"],
-            ["certificates", "education", "skills", "experience"]
-        )
-
-        project_lines = clean_lines(project_text)
-
-        if project_lines:
-            score += 15
-        else:
-            score -= 10
-
-        # EXPERIENCE
-        if experience_lines:
-            score += 10
-        else:
-            score -= 5
-
-        # EDUCATION
         education_text = get_section(
             text,
             ["education", "academic background"],
-            ["skills", "projects", "certificates", "experience"]
+            ["skills", "projects", "experience", "certificates", "certifications"]
         )
-
         education_lines = clean_lines(education_text)
 
-        if education_lines:
-            score += 10
-
-        # CERTIFICATES
         certificate_text = get_section(
             text,
             ["certificates", "certifications", "certificate"],
             ["projects", "skills", "education", "experience"]
         )
-
         certificate_lines = clean_lines(certificate_text)
 
-        if certificate_lines:
+        project_text = get_section(
+            text,
+            ["projects", "project"],
+            ["certificates", "certifications", "education", "skills", "experience"]
+        )
+        project_lines = clean_lines(project_text)
+
+        experience_text = get_section(
+            text,
+            ["experience", "work experience", "internship"],
+            ["education", "skills", "projects", "certificates", "certifications"]
+        )
+        experience_lines = clean_lines(experience_text)
+
+        score = 45
+
+        if len(found_skills) >= 8:
+            score += 18
+        elif len(found_skills) >= 5:
+            score += 12
+        else:
             score += 5
 
-        # SHORT RESUME PENALTY
-        if len(text.split()) < 250:
-            score -= 15
+        if education_lines:
+            score += 7
+        if project_lines:
+            score += 8
+        if certificate_lines:
+            score += 8
+        if experience_lines:
+            score += 8
+        if len(text.split()) > 250:
+            score += 8
+        if "github" in text.lower():
+            score += 4
 
-        # SUMMARY PENALTY
-        if "summary" not in text.lower():
-            score -= 5
-
-        # LIMIT
         if score > 92:
             score = 92
 
-        if score < 35:
-            score = 35
+        rank = get_rank(score)
 
-        st.markdown(
-            f'<div class="score-box">ATS Resume Score: {score}/100</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="section-title">👤 Candidate Name</div>', unsafe_allow_html=True)
+        st.markdown(f"<div class='info-box'>{candidate_name}</div>", unsafe_allow_html=True)
 
+        st.markdown('<div class="section-title">🚀 Skills Found</div>', unsafe_allow_html=True)
+        if found_skills:
+            for skill in found_skills:
+                st.markdown(f"<div class='skill-box'>{skill}</div>", unsafe_allow_html=True)
+        else:
+            st.warning("No Skills Found")
+
+        st.markdown(f"<div class='score-box'>ATS Resume Score: {score}/100</div>", unsafe_allow_html=True)
         st.progress(score)
 
-        # =========================
-        # EDUCATION
-        # =========================
-        st.markdown(
-            '<div class="section-title">🎓 Education</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="section-title">🏆 Resume Rank</div>', unsafe_allow_html=True)
+        st.markdown(f"<div class='info-box'><b>{rank}</b> Level Resume</div>", unsafe_allow_html=True)
 
+        st.markdown('<div class="section-title">📊 Resume Strength Graph</div>', unsafe_allow_html=True)
+
+        skill_score = min(len(found_skills) * 12, 100)
+        project_score = 80 if project_lines else 30
+        education_score = 85 if education_lines else 30
+        cert_score = 75 if certificate_lines else 25
+        experience_score = 75 if experience_lines else 25
+
+        graph_data = {
+            "Skills": skill_score,
+            "Projects": project_score,
+            "Education": education_score,
+            "Certificates": cert_score,
+            "Experience": experience_score,
+            "ATS": score
+        }
+
+        for key, value in graph_data.items():
+            st.write(f"{key}: {value}%")
+            st.progress(value)
+
+        st.markdown('<div class="section-title">🎓 Education</div>', unsafe_allow_html=True)
         if education_lines:
-
             st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-
             for line in education_lines:
-
-                if line.lower() not in ["education"]:
+                if line.lower() not in ["education", "academic background"]:
                     st.write("•", line)
-
             st.markdown("</div>", unsafe_allow_html=True)
-
         else:
-            st.warning("No Proper Education Details Found")
+            st.warning("No Education Details Found")
 
-        # =========================
-        # CERTIFICATES
-        # =========================
-        st.markdown(
-            '<div class="section-title">📜 Certificates</div>',
-            unsafe_allow_html=True
-        )
-
+        st.markdown('<div class="section-title">📜 Certificates</div>', unsafe_allow_html=True)
         if certificate_lines:
-
             st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-
             for line in certificate_lines:
-
-                if line.lower() not in [
-                    "certificate",
-                    "certificates",
-                    "certification"
-                ]:
+                if line.lower() not in ["certificate", "certificates", "certifications"]:
                     st.write("•", line)
-
             st.markdown("</div>", unsafe_allow_html=True)
-
         else:
-            st.warning("No Proper Certificates Found")
+            st.warning("No Certificate Details Found")
 
-        # =========================
-        # PROJECTS
-        # =========================
-        st.markdown(
-            '<div class="section-title">🛠 Projects</div>',
-            unsafe_allow_html=True
-        )
-
+        st.markdown('<div class="section-title">🛠 Projects</div>', unsafe_allow_html=True)
         if project_lines:
-
             st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-
             for line in project_lines:
-
-                if line.lower() not in ["projects", "project"]:
+                if line.lower() not in ["project", "projects"]:
                     st.write("•", line)
-
             st.markdown("</div>", unsafe_allow_html=True)
-
         else:
-            st.warning("No Proper Projects Found")
+            st.warning("No Project Details Found")
 
-        # =========================
-        # JOB ROLE
-        # =========================
-        st.markdown(
-            '<div class="section-title">💼 Predicted Job Role</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="section-title">💼 Experience</div>', unsafe_allow_html=True)
+        if experience_lines:
+            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
+            for line in experience_lines:
+                if line.lower() not in ["experience", "work experience", "internship"]:
+                    st.write("•", line)
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.warning("No Experience Details Found")
+
+        st.markdown('<div class="section-title">💼 Predicted Job Role</div>', unsafe_allow_html=True)
 
         if "cybersecurity" in text.lower():
             role = "Cybersecurity Analyst"
-
         elif "react" in text.lower():
             role = "Frontend Developer"
-
         elif "machine learning" in text.lower():
             role = "Machine Learning Engineer"
-
         elif "python" in text.lower():
             role = "Python Developer"
-
         elif "java" in text.lower():
             role = "Java Developer"
-
         else:
             role = "Software Engineer"
 
         st.success(role)
 
-        # =========================
-        # HOW TO IMPROVE RESUME
-        # =========================
-        st.markdown(
-            '<div class="section-title">🚀 How To Improve Your Resume</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="section-title">💼 Recommended Jobs</div>', unsafe_allow_html=True)
 
-        improvement_text = ""
+        if role == "Cybersecurity Analyst":
+            jobs = ["Security Analyst", "SOC Analyst", "Cybersecurity Intern"]
+        elif role == "Frontend Developer":
+            jobs = ["React Developer", "Frontend Intern", "Web Developer"]
+        elif role == "Machine Learning Engineer":
+            jobs = ["ML Intern", "AI Engineer", "Data Science Intern"]
+        elif role == "Python Developer":
+            jobs = ["Python Developer", "Backend Intern", "Automation Developer"]
+        else:
+            jobs = ["Software Developer", "IT Intern", "Junior Developer"]
 
-        # Skills
-        if len(found_skills) < 5:
+        for job in jobs:
+            st.markdown(f"<div class='skill-box'>{job}</div>", unsafe_allow_html=True)
 
-            improvement_text += """
-            🔹 Add more technical skills related to your target job role.
-            Add technologies like React, SQL, Machine Learning,
-            AWS, Data Science, etc.
+        st.markdown('<div class="section-title">🚀 AI Resume Suggestions</div>', unsafe_allow_html=True)
 
-            """
+        improvement = ""
 
-        # Projects
+        if not education_lines:
+            improvement += "• Add proper education details.<br>"
         if not project_lines:
-
-            improvement_text += """
-            🔹 Add at least 2 strong projects with:
-            • Project Name
-            • Technologies Used
-            • Features
-            • Problem Solved
-
-            """
-
-        # Experience
-        if not experience_lines:
-
-            improvement_text += """
-            🔹 Add internship, freelance work or practical experience.
-
-            """
-
-        # Resume Length
-        if len(text.split()) < 250:
-
-            improvement_text += """
-            🔹 Resume content is too short.
-            Explain projects, achievements and technical work properly.
-
-            """
-
-        # Certificates
+            improvement += "• Add strong projects with technology used, features and GitHub link.<br>"
         if not certificate_lines:
+            improvement += "• Add industry certificates like Google, AWS, IBM, Cisco, Coursera etc.<br>"
+        if not experience_lines:
+            improvement += "• Add internship, freelance work or practical experience.<br>"
+        if "github" not in text.lower():
+            improvement += "• Add GitHub profile link.<br>"
 
-            improvement_text += """
-            🔹 Add certificates like:
-            • Google Cybersecurity
-            • AWS Cloud
-            • IBM AI
-            • Cisco Networking
+        improvement += "• Add measurable achievements with numbers.<br>"
+        improvement += "• Use job-specific keywords.<br>"
+        improvement += "• Improve project descriptions with problem, solution and impact.<br>"
 
-            """
+        st.markdown(f"<div class='info-box'>{improvement}</div>", unsafe_allow_html=True)
 
-        # ATS
-        if score < 70:
+        st.markdown('<div class="section-title">📝 Smart Resume Summary</div>', unsafe_allow_html=True)
 
-            improvement_text += """
-            🔹 ATS score is below average.
-            Add professional keywords and improve formatting.
-
-            """
-
-        # Strong Resume
-        if improvement_text == "":
-
-            improvement_text = """
-            ✅ Resume looks professional.
-
-            To make it even stronger:
-            • Add measurable achievements
-            • Add GitHub links
-            • Add portfolio website
-            • Add leadership experience
-
-            """
-
-        st.markdown(
-            f'<div class="info-box">{improvement_text}</div>',
-            unsafe_allow_html=True
-        )
-
-        # =========================
-        # SHORT SUMMARY
-        # =========================
-        st.markdown(
-            '<div class="section-title">📝 Short Resume Summary</div>',
-            unsafe_allow_html=True
-        )
-
-        top_skills = (
-            ", ".join(found_skills[:5])
-            if found_skills
-            else "technical skills"
-        )
+        profile_type = "experienced candidate" if experience_lines else "fresher candidate"
+        top_skills = ", ".join(found_skills[:5]) if found_skills else "technical skills"
 
         summary = f"""
-        {candidate_name} has a technical profile with skills in
-        {top_skills}.
+        <b>{candidate_name}</b> is a {profile_type} with skills in
+        <b>{top_skills}</b>.<br><br>
 
-        The resume achieved an ATS score of {score}/100
-        and is suitable for the role of {role}.
+        The resume achieved an ATS score of <b>{score}/100</b>
+        and is ranked as <b>{rank}</b> level.<br><br>
 
-        The resume can be improved further by adding
-        measurable achievements, strong projects,
-        industry certificates and job-specific keywords.
+        Suitable role: <b>{role}</b>.
         """
 
-        st.markdown(
-            f"<div class='info-box'>{summary}</div>",
-            unsafe_allow_html=True
+        st.markdown(f"<div class='info-box'>{summary}</div>", unsafe_allow_html=True)
+
+        st.markdown('<div class="section-title">📄 Resume Template Suggestion</div>', unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class='info-box'>
+        Best template for this resume:<br><br>
+        • One-page clean resume<br>
+        • Skills section near top<br>
+        • Projects with GitHub links<br>
+        • ATS-friendly formatting<br>
+        • No heavy graphics or tables
+        </div>
+        """, unsafe_allow_html=True)
+
+        report_text = make_report_text(candidate_name, score, role, found_skills, rank, improvement)
+
+        st.download_button(
+            label="📥 Download Resume Analysis Report",
+            data=report_text,
+            file_name="resume_analysis_report.txt",
+            mime="text/plain"
         )
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ================= JOB MATCHER =================
+elif st.session_state.page == "Job Matcher":
+
+    st.markdown("## 🎯 Resume vs Job Description Matcher")
+
+    resume_file = st.file_uploader("Upload Resume PDF", type=["pdf"])
+    job_description = st.text_area("Paste Job Description")
+
+    if resume_file and job_description:
+
+        with st.spinner("Matching Resume With Job Description..."):
+            resume_text = read_pdf(resume_file)
+
+        matched = []
+        missing = []
+
+        for skill in skills:
+            if skill.lower() in job_description.lower():
+                if skill.lower() in resume_text.lower():
+                    matched.append(skill)
+                else:
+                    missing.append(skill)
+
+        total = len(matched) + len(missing)
+        match_score = int((len(matched) / total) * 100) if total > 0 else 0
+
+        st.markdown(f"<div class='score-box'>Match Score: {match_score}%</div>", unsafe_allow_html=True)
+        st.progress(match_score)
+
+        st.subheader("✅ Matching Skills")
+        for item in matched:
+            st.success(item)
+
+        st.subheader("❌ Missing Skills")
+        for item in missing:
+            st.warning(item)
+
+        st.subheader("🔍 Keyword Scanner")
+        for skill in skills:
+            if skill.lower() in job_description.lower():
+                if skill.lower() in resume_text.lower():
+                    st.success(f"{skill} found in resume")
+                else:
+                    st.error(f"{skill} missing from resume")
+
+# ================= INTERVIEW =================
+elif st.session_state.page == "Interview":
+
+    st.markdown("## 🎤 AI Interview Questions")
+
+    level = st.selectbox("Choose Difficulty Level", ["Beginner", "Intermediate", "Advanced"])
+
+    file = st.file_uploader("Upload Resume PDF", type=["pdf"])
+
+    if file:
+
+        with st.spinner("Generating Interview Questions..."):
+            text = read_pdf(file)
+
+        found = []
+
+        for skill in skills:
+            if skill.lower() in text.lower():
+                found.append(skill)
+
+        if found:
+            for skill in found:
+                if skill in question_bank:
+                    st.markdown(f"<div class='section-title'>{skill} Questions</div>", unsafe_allow_html=True)
+
+                    for q in question_bank[skill][level]:
+                        st.markdown(f"<div class='info-box'>• {q}</div>", unsafe_allow_html=True)
+        else:
+            st.warning("No skills found for interview question generation.")
