@@ -30,156 +30,39 @@ def hash_password(password):
 
 dark_css = """
 <style>
-.stApp{
-    background:linear-gradient(-45deg,#020617,#0f172a,#1e1b4b,#312e81);
-    background-size:400% 400%;
-    animation:gradientBG 12s ease infinite;
-    color:white;
-}
-@keyframes gradientBG{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
-.hero{
-    padding:70px;
-    border-radius:30px;
-    text-align:center;
-    background:rgba(255,255,255,0.06);
-    backdrop-filter:blur(15px);
-    animation:floatAnim 4s ease-in-out infinite;
-}
-@keyframes floatAnim{
-    0%{transform:translateY(0);}
-    50%{transform:translateY(-10px);}
-    100%{transform:translateY(0);}
-}
-.hero-title{
-    font-size:72px;
-    font-weight:900;
-    color:#38bdf8;
-    text-shadow:0 0 20px rgba(56,189,248,0.8);
-}
-.hero-sub{
-    font-size:22px;
-    color:#dbeafe;
-}
-.card,.info-box,.login-card{
-    background:rgba(255,255,255,0.07);
-    border:1px solid rgba(255,255,255,0.18);
-    border-radius:24px;
-    padding:22px;
-    margin-top:20px;
-    backdrop-filter:blur(12px);
-    box-shadow:0 0 25px rgba(34,211,238,0.15);
-}
-.section-title{
-    font-size:34px;
-    font-weight:900;
-    color:#38bdf8;
-    margin-top:30px;
-    margin-bottom:15px;
-}
-.skill-box{
-    background:linear-gradient(90deg,#06b6d4,#8b5cf6);
-    padding:12px;
-    border-radius:14px;
-    margin:10px 0;
-    color:white;
-    font-weight:700;
-}
-.score-box{
-    background:linear-gradient(90deg,#2563eb,#06b6d4);
-    padding:28px;
-    border-radius:20px;
-    text-align:center;
-    font-size:38px;
-    font-weight:900;
-    color:white;
-}
-.stButton>button{
-    background:linear-gradient(90deg,#06b6d4,#8b5cf6);
-    color:white;
-    border:none;
-    border-radius:14px;
-    padding:12px 24px;
-    font-weight:700;
-}
-.watermark{
-    position:fixed;
-    bottom:15px;
-    right:25px;
-    color:rgba(255,255,255,0.18);
-    font-size:18px;
-    font-weight:700;
-}
+.stApp{background:linear-gradient(-45deg,#020617,#0f172a,#1e1b4b,#312e81);background-size:400% 400%;animation:gradientBG 12s ease infinite;color:white;}
+@keyframes gradientBG{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+.hero{padding:70px;border-radius:30px;text-align:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(15px);animation:floatAnim 4s ease-in-out infinite;}
+@keyframes floatAnim{0%{transform:translateY(0);}50%{transform:translateY(-10px);}100%{transform:translateY(0);}}
+.hero-title{font-size:72px;font-weight:900;color:#38bdf8;text-shadow:0 0 20px rgba(56,189,248,0.8);}
+.hero-sub{font-size:22px;color:#dbeafe;}
+.card,.info-box,.login-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:24px;padding:22px;margin-top:20px;backdrop-filter:blur(12px);box-shadow:0 0 25px rgba(34,211,238,0.15);}
+.section-title{font-size:34px;font-weight:900;color:#38bdf8;margin-top:30px;margin-bottom:15px;}
+.skill-box{background:linear-gradient(90deg,#06b6d4,#8b5cf6);padding:12px;border-radius:14px;margin:10px 0;color:white;font-weight:700;}
+.score-box{background:linear-gradient(90deg,#2563eb,#06b6d4);padding:28px;border-radius:20px;text-align:center;font-size:38px;font-weight:900;color:white;}
+.stButton>button{background:linear-gradient(90deg,#06b6d4,#8b5cf6);color:white;border:none;border-radius:14px;padding:12px 24px;font-weight:700;}
+.watermark{position:fixed;bottom:15px;right:25px;color:rgba(255,255,255,0.18);font-size:18px;font-weight:700;}
 </style>
 """
 
 light_css = """
 <style>
-.stApp{
-    background:linear-gradient(135deg,#f8fafc,#dbeafe,#e0f2fe);
-    color:#111827;
-}
-.hero,.card,.info-box,.login-card{
-    background:white;
-    border-radius:24px;
-    padding:22px;
-    margin-top:20px;
-    box-shadow:0 0 18px rgba(0,0,0,0.08);
-}
-.hero{
-    padding:70px;
-    text-align:center;
-}
-.hero-title{
-    font-size:72px;
-    font-weight:900;
-    color:#2563eb;
-}
-.hero-sub{
-    font-size:22px;
-    color:#374151;
-}
-.section-title{
-    font-size:34px;
-    font-weight:900;
-    color:#2563eb;
-    margin-top:30px;
-    margin-bottom:15px;
-}
-.skill-box,.stButton>button{
-    background:linear-gradient(90deg,#2563eb,#7c3aed);
-    padding:12px;
-    border-radius:14px;
-    color:white;
-    font-weight:700;
-}
-.score-box{
-    background:linear-gradient(90deg,#2563eb,#06b6d4);
-    padding:28px;
-    border-radius:20px;
-    text-align:center;
-    font-size:38px;
-    font-weight:900;
-    color:white;
-}
-.watermark{
-    position:fixed;
-    bottom:15px;
-    right:25px;
-    color:rgba(0,0,0,0.15);
-    font-size:18px;
-    font-weight:700;
-}
+.stApp{background:linear-gradient(135deg,#f8fafc,#dbeafe,#e0f2fe);color:#111827;}
+.hero,.card,.info-box,.login-card{background:white;border-radius:24px;padding:22px;margin-top:20px;box-shadow:0 0 18px rgba(0,0,0,0.08);}
+.hero{padding:70px;text-align:center;}
+.hero-title{font-size:72px;font-weight:900;color:#2563eb;}
+.hero-sub{font-size:22px;color:#374151;}
+.section-title{font-size:34px;font-weight:900;color:#2563eb;margin-top:30px;margin-bottom:15px;}
+.skill-box,.stButton>button{background:linear-gradient(90deg,#2563eb,#7c3aed);padding:12px;border-radius:14px;color:white;font-weight:700;}
+.score-box{background:linear-gradient(90deg,#2563eb,#06b6d4);padding:28px;border-radius:20px;text-align:center;font-size:38px;font-weight:900;color:white;}
+.watermark{position:fixed;bottom:15px;right:25px;color:rgba(0,0,0,0.15);font-size:18px;font-weight:700;}
 </style>
 """
 
 st.markdown(dark_css if st.session_state.theme == "dark" else light_css, unsafe_allow_html=True)
 st.markdown('<div class="watermark">Created by Tanishq Garg</div>', unsafe_allow_html=True)
 
-skills = ["Python","Java","C++","SQL","JavaScript","React","Cybersecurity","Machine Learning","AI","HTML","CSS"]
+skills = ["Python","Java","C++","SQL","JavaScript","React","Cybersecurity","Machine Learning","AI","HTML","CSS","AWS","MongoDB","Flask","Django","Node.js"]
 
 def read_pdf(file):
     text = ""
@@ -198,49 +81,141 @@ def section_lines(text, keywords):
                 lines.append(line.strip())
     return list(dict.fromkeys(lines))[:8]
 
-c1,c2,c3,c4,c5,c6,c7 = st.columns([3,1,1,1,1.4,1.5,1])
+def extract_custom_sections(text):
+    headings = [
+        "achievements","languages","hobbies","internships","awards",
+        "research","leadership","publications","volunteer work",
+        "activities","summary","objective","interests"
+    ]
+    sections = {}
+    lines = text.split("\n")
+    current = None
 
-with c1:
-    st.markdown("## 💼 AI RESUME ANALYZER")
+    for line in lines:
+        clean = line.strip()
+        lower = clean.lower()
+
+        if lower in headings:
+            current = clean.title()
+            sections[current] = []
+        elif current and clean:
+            sections[current].append(clean)
+
+    return sections
+
+def detect_role(text):
+    t = text.lower()
+    if "cybersecurity" in t or "network security" in t:
+        return "Cybersecurity Analyst"
+    elif "react" in t or "frontend" in t:
+        return "Frontend Developer"
+    elif "machine learning" in t or "ai" in t:
+        return "Machine Learning Engineer"
+    elif "python" in t:
+        return "Python Developer"
+    elif "java" in t:
+        return "Java Developer"
+    return "Software Engineer"
+
+def career_roadmap(role):
+    roadmaps = {
+        "Cybersecurity Analyst": [
+            "Learn Networking Basics",
+            "Learn Linux Commands",
+            "Study Cybersecurity Fundamentals",
+            "Practice Wireshark, Nmap, Burp Suite",
+            "Build 2 security projects",
+            "Prepare CompTIA Security+ / Google Cybersecurity Certificate"
+        ],
+        "Frontend Developer": [
+            "Master HTML, CSS, JavaScript",
+            "Learn React.js deeply",
+            "Build responsive websites",
+            "Learn GitHub and deployment",
+            "Build portfolio website",
+            "Apply for frontend internships"
+        ],
+        "Machine Learning Engineer": [
+            "Master Python and Statistics",
+            "Learn NumPy, Pandas, Matplotlib",
+            "Study Machine Learning algorithms",
+            "Build ML projects",
+            "Learn Deep Learning basics",
+            "Deploy ML app using Streamlit"
+        ],
+        "Python Developer": [
+            "Master Python fundamentals",
+            "Learn OOP and file handling",
+            "Learn Flask/Django",
+            "Build automation projects",
+            "Learn SQL database integration",
+            "Deploy Python apps"
+        ],
+        "Software Engineer": [
+            "Master DSA basics",
+            "Learn Git and GitHub",
+            "Build 3 real-world projects",
+            "Learn database and APIs",
+            "Improve resume and LinkedIn",
+            "Practice interview questions"
+        ]
+    }
+    return roadmaps.get(role, roadmaps["Software Engineer"])
+
+def linkedin_score(profile_text):
+    score = 40
+    checks = {
+        "Headline present": any(w in profile_text.lower() for w in ["developer","engineer","student","analyst"]),
+        "Skills mentioned": any(s.lower() in profile_text.lower() for s in skills),
+        "Projects mentioned": "project" in profile_text.lower(),
+        "GitHub mentioned": "github" in profile_text.lower(),
+        "Achievement mentioned": any(w in profile_text.lower() for w in ["achieved","built","developed","created","certified"]),
+        "Contact/Email mentioned": "@" in profile_text
+    }
+    for v in checks.values():
+        if v:
+            score += 10
+    return min(score, 100), checks
+
+# NAVBAR
+c1,c2,c3,c4,c5,c6,c7,c8,c9 = st.columns([3,1,1,1,1.3,1.4,1.3,1.3,1])
+with c1: st.markdown("## 💼 AI RESUME ANALYZER")
 with c2:
-    if st.button("Home", key="homebtn"):
-        st.session_state.page = "home"
+    if st.button("Home", key="homebtn"): st.session_state.page = "home"
 with c3:
-    if st.button("About", key="aboutbtn"):
-        st.session_state.page = "about"
+    if st.button("About", key="aboutbtn"): st.session_state.page = "about"
 with c4:
-    if st.button("Help", key="helpbtn"):
-        st.session_state.page = "help"
+    if st.button("Help", key="helpbtn"): st.session_state.page = "help"
 with c5:
-    if st.button("Job Matcher", key="jobbtn"):
-        st.session_state.page = "job"
+    if st.button("Job Matcher", key="jobbtn"): st.session_state.page = "job"
 with c6:
-    if st.button("Interview Qs", key="interbtn"):
-        st.session_state.page = "interview"
+    if st.button("Interview Qs", key="interbtn"): st.session_state.page = "interview"
 with c7:
+    if st.button("LinkedIn", key="linkedinbtn"): st.session_state.page = "linkedin"
+with c8:
+    if st.button("Portfolio", key="portfoliobtn"): st.session_state.page = "portfolio"
+with c9:
     if st.button("☀️/🌙", key="themebtn"):
         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
 
 if st.session_state.page == "home":
-
     st.markdown("""
 <div class="hero">
     <div class="hero-title">AI RESUME ANALYZER</div>
     <div class="hero-sub">
-        Analyze resume, ATS score, job match and interview preparation
+        Resume Analysis • Job Match • LinkedIn Analyzer • Portfolio Generator • AI Career Roadmap
     </div>
 </div>
 """, unsafe_allow_html=True)
 
     colA,colB,colC = st.columns(3)
-
     with colA:
-        st.markdown("<div class='info-box'><h3>📊 Resume Analysis</h3>ATS score, projects, skills, education and certificates.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'><h3>📊 Resume Analysis</h3>ATS score, skills, education, certificates, projects and extra sections.</div>", unsafe_allow_html=True)
     with colB:
-        st.markdown("<div class='info-box'><h3>🎯 Job Matching</h3>Compare resume with job description.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'><h3>🔗 LinkedIn Analyzer</h3>Check profile strength and improvement points.</div>", unsafe_allow_html=True)
     with colC:
-        st.markdown("<div class='info-box'><h3>🎤 Interview Questions</h3>Generate AI interview questions.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='info-box'><h3>🌐 Portfolio Generator</h3>Create portfolio content from your details.</div>", unsafe_allow_html=True)
 
     center = st.columns([2,1,2])
     with center[1]:
@@ -249,42 +224,40 @@ if st.session_state.page == "home":
             st.rerun()
 
 elif st.session_state.page == "about":
-
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">About Developer</div>', unsafe_allow_html=True)
     st.write("👨‍💻 Name: Tanishq Garg")
-    st.write("🎓 Computer Science Student")
+    st.write("🎓 Computer Science and Artificial Intelligence Student")
     st.write("🚀 AI & Cybersecurity Enthusiast")
     st.markdown('<div class="section-title">About Website</div>', unsafe_allow_html=True)
     st.write("""
     This website can:
     - Analyze resume
+    - Detect extra resume sections
     - Generate ATS score
     - Match jobs
-    - Generate interview questions
-    - Detect projects and certificates
+    - Analyze LinkedIn profile
+    - Generate portfolio content
+    - Create AI career roadmap
     """)
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.page == "help":
-
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">How Website Works</div>', unsafe_allow_html=True)
     st.write("""
     1. Login or Signup  
     2. Upload Resume PDF  
-    3. AI analyzes your resume  
-    4. ATS score generated  
-    5. Skills, projects and certificates detected  
-    6. Job role prediction  
-    7. Interview questions generated  
+    3. Website analyzes resume  
+    4. Extra sections also get detected  
+    5. ATS score and career roadmap generated  
+    6. Use LinkedIn Analyzer and Portfolio Generator  
     """)
     st.markdown('<div class="section-title">Contact Support</div>', unsafe_allow_html=True)
     st.write("📞 9460460765")
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.page == "login":
-
     st.markdown('<div class="login-card">', unsafe_allow_html=True)
     option = st.radio("Choose Option", ["Login","Signup"])
 
@@ -312,7 +285,6 @@ elif st.session_state.page == "login":
             hashed = hash_password(password)
             c.execute("SELECT * FROM users WHERE email=? AND password=?", (email,hashed))
             data = c.fetchone()
-
             if data:
                 st.session_state.logged_in = True
                 st.session_state.user_email = email
@@ -324,7 +296,6 @@ elif st.session_state.page == "login":
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.page == "dashboard":
-
     if not st.session_state.logged_in:
         st.session_state.page = "login"
         st.rerun()
@@ -332,32 +303,33 @@ elif st.session_state.page == "dashboard":
     st.markdown('<div class="section-title">👤 User Dashboard</div>', unsafe_allow_html=True)
     st.markdown(f"<div class='info-box'>Welcome: <b>{st.session_state.user_email}</b><br><br>Choose any feature:</div>", unsafe_allow_html=True)
 
-    col1,col2,col3 = st.columns(3)
+    col1,col2,col3,col4 = st.columns(4)
     with col1:
         if st.button("Resume Analyzer", key="resumeopen"):
             st.session_state.page = "analyzer"
             st.rerun()
     with col2:
-        if st.button("Job Matcher Open", key="jobopen"):
+        if st.button("Job Matcher", key="jobopen"):
             st.session_state.page = "job"
             st.rerun()
     with col3:
-        if st.button("Interview Questions", key="interopen"):
-            st.session_state.page = "interview"
+        if st.button("LinkedIn Analyzer", key="linkopen"):
+            st.session_state.page = "linkedin"
+            st.rerun()
+    with col4:
+        if st.button("Portfolio Generator", key="portfolioopen"):
+            st.session_state.page = "portfolio"
             st.rerun()
 
 elif st.session_state.page == "analyzer":
-
     st.markdown("## 📄 Upload Resume")
     uploaded_file = st.file_uploader("Upload Resume PDF", type=["pdf"])
 
     if uploaded_file is not None:
-
         text = read_pdf(uploaded_file)
         text_lower = text.lower()
 
         st.markdown('<div class="card">', unsafe_allow_html=True)
-
         candidate_name = text.split("\n")[0] if text.split("\n") else "Candidate"
 
         found_skills = [skill for skill in skills if skill.lower() in text_lower]
@@ -366,6 +338,7 @@ elif st.session_state.page == "analyzer":
         project_lines = section_lines(text, ["project","developed","built","created"])
         certificate_lines = section_lines(text, ["certificate","certification","google","aws","coursera","ibm","cisco"])
         experience_lines = section_lines(text, ["intern","experience","developer","engineer","worked"])
+        custom_sections = extract_custom_sections(text)
 
         score = 45
         if len(found_skills) >= 8:
@@ -374,30 +347,15 @@ elif st.session_state.page == "analyzer":
             score += 12
         else:
             score += 5
+        if education_lines: score += 7
+        if project_lines: score += 8
+        if certificate_lines: score += 8
+        if experience_lines: score += 8
+        if len(text.split()) > 250: score += 8
+        if custom_sections: score += 4
+        if score > 92: score = 92
 
-        if education_lines:
-            score += 7
-        if project_lines:
-            score += 8
-        if certificate_lines:
-            score += 8
-        if experience_lines:
-            score += 8
-        if len(text.split()) > 250:
-            score += 8
-        if score > 92:
-            score = 92
-
-        if "cybersecurity" in text_lower:
-            role = "Cybersecurity Analyst"
-        elif "react" in text_lower:
-            role = "Frontend Developer"
-        elif "python" in text_lower:
-            role = "Python Developer"
-        elif "machine learning" in text_lower:
-            role = "Machine Learning Engineer"
-        else:
-            role = "Software Engineer"
+        role = detect_role(text)
 
         st.markdown('<div class="section-title">👤 Candidate Name</div>', unsafe_allow_html=True)
         st.markdown(f"<div class='info-box'>{candidate_name}</div>", unsafe_allow_html=True)
@@ -412,44 +370,36 @@ elif st.session_state.page == "analyzer":
         st.markdown(f"<div class='score-box'>ATS Resume Score: {score}/100</div>", unsafe_allow_html=True)
         st.progress(score)
 
-        st.markdown('<div class="section-title">🎓 Education</div>', unsafe_allow_html=True)
-        if education_lines:
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            for line in education_lines:
-                st.write("•", line)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.warning("No Education Found")
+        for title, lines in [
+            ("🎓 Education", education_lines),
+            ("📜 Certificates", certificate_lines),
+            ("🚀 Projects", project_lines),
+            ("💼 Experience", experience_lines)
+        ]:
+            st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
+            if lines:
+                st.markdown("<div class='info-box'>", unsafe_allow_html=True)
+                for line in lines:
+                    st.write("•", line)
+                st.markdown("</div>", unsafe_allow_html=True)
+            else:
+                st.warning(f"No {title.split(' ',1)[1]} Found")
 
-        st.markdown('<div class="section-title">📜 Certificates</div>', unsafe_allow_html=True)
-        if certificate_lines:
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            for line in certificate_lines:
-                st.write("•", line)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.warning("No Certificates Found")
-
-        st.markdown('<div class="section-title">🚀 Projects</div>', unsafe_allow_html=True)
-        if project_lines:
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            for line in project_lines:
-                st.write("•", line)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.warning("No Projects Found")
-
-        st.markdown('<div class="section-title">💼 Experience</div>', unsafe_allow_html=True)
-        if experience_lines:
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            for line in experience_lines:
-                st.write("•", line)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.warning("No Experience Found")
+        if custom_sections:
+            st.markdown('<div class="section-title">📌 Extra Resume Sections</div>', unsafe_allow_html=True)
+            for heading, content in custom_sections.items():
+                st.markdown(f"<div class='info-box'><b>{heading}</b></div>", unsafe_allow_html=True)
+                for item in content[:8]:
+                    st.write("•", item)
 
         st.markdown('<div class="section-title">💼 Predicted Role</div>', unsafe_allow_html=True)
         st.success(role)
+
+        st.markdown('<div class="section-title">🧠 AI Career Roadmap</div>', unsafe_allow_html=True)
+        st.markdown("<div class='info-box'>", unsafe_allow_html=True)
+        for step in career_roadmap(role):
+            st.write("✅", step)
+        st.markdown("</div>", unsafe_allow_html=True)
 
         improvement = """
         • Add measurable achievements<br>
@@ -465,29 +415,24 @@ elif st.session_state.page == "analyzer":
         st.markdown(f"<div class='info-box'>{improvement}</div>", unsafe_allow_html=True)
 
         top_skills = ", ".join(found_skills[:5]) if found_skills else "technical skills"
-
         summary = f"""
         <b>{candidate_name}</b> has skills in <b>{top_skills}</b>.<br><br>
         ATS Score: <b>{score}/100</b><br>
         Suitable Role: <b>{role}</b>
         """
-
         st.markdown('<div class="section-title">📝 Smart Resume Summary</div>', unsafe_allow_html=True)
         st.markdown(f"<div class='info-box'>{summary}</div>", unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.page == "job":
-
     st.markdown("## 🎯 Resume vs Job Description")
     resume_file = st.file_uploader("Upload Resume", type=["pdf"])
     job_description = st.text_area("Paste Job Description")
 
     if resume_file and job_description:
         resume_text = read_pdf(resume_file)
-
-        matched = []
-        missing = []
+        matched, missing = [], []
 
         for skill in skills:
             if skill.lower() in job_description.lower():
@@ -511,13 +456,11 @@ elif st.session_state.page == "job":
             st.warning(item)
 
 elif st.session_state.page == "interview":
-
     st.markdown("## 🎤 AI Interview Questions")
     file = st.file_uploader("Upload Resume PDF", type=["pdf"])
 
     if file:
         text = read_pdf(file)
-
         questions = [
             "Tell me about yourself.",
             "Explain your best project.",
@@ -526,6 +469,92 @@ elif st.session_state.page == "interview":
             "Explain OOP concepts.",
             "What is Python?"
         ]
-
         for q in questions:
             st.markdown(f"<div class='info-box'>• {q}</div>", unsafe_allow_html=True)
+
+elif st.session_state.page == "linkedin":
+    st.markdown("## 🔗 LinkedIn Analyzer")
+
+    profile_text = st.text_area("Paste your LinkedIn About/Headline/Experience text", height=250)
+
+    if st.button("Analyze LinkedIn", key="analyze_linkedin"):
+        score, checks = linkedin_score(profile_text)
+
+        st.markdown(f"<div class='score-box'>LinkedIn Score: {score}/100</div>", unsafe_allow_html=True)
+        st.progress(score)
+
+        st.markdown('<div class="section-title">LinkedIn Checklist</div>', unsafe_allow_html=True)
+        for item, ok in checks.items():
+            if ok:
+                st.success("✅ " + item)
+            else:
+                st.warning("❌ " + item)
+
+        st.markdown('<div class="section-title">Improve LinkedIn</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class='info-box'>
+        • Add strong headline with role and skills<br>
+        • Add GitHub and portfolio link<br>
+        • Add project details with results<br>
+        • Add certifications<br>
+        • Use keywords from your target job role<br>
+        </div>
+        """, unsafe_allow_html=True)
+
+elif st.session_state.page == "portfolio":
+    st.markdown("## 🌐 Portfolio Generator")
+
+    name = st.text_input("Your Name")
+    role = st.text_input("Your Role", "Python Developer")
+    about = st.text_area("About You")
+    skill_input = st.text_area("Skills")
+    project_input = st.text_area("Projects")
+    contact = st.text_input("Contact / Email / LinkedIn")
+
+    if st.button("Generate Portfolio Content", key="generate_portfolio"):
+        portfolio = f"""
+{name}
+{role}
+
+ABOUT
+{about}
+
+SKILLS
+{skill_input}
+
+PROJECTS
+{project_input}
+
+CONTACT
+{contact}
+"""
+        st.markdown('<div class="section-title">Generated Portfolio Content</div>', unsafe_allow_html=True)
+        st.text_area("Portfolio Content", portfolio, height=350)
+
+        html_code = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>{name} Portfolio</title>
+<style>
+body{{font-family:Arial;background:#020617;color:white;padding:40px;}}
+.card{{background:#111827;padding:25px;border-radius:18px;margin:20px 0;}}
+h1{{color:#38bdf8;}}
+</style>
+</head>
+<body>
+<h1>{name}</h1>
+<h2>{role}</h2>
+<div class="card"><h3>About</h3><p>{about}</p></div>
+<div class="card"><h3>Skills</h3><p>{skill_input}</p></div>
+<div class="card"><h3>Projects</h3><p>{project_input}</p></div>
+<div class="card"><h3>Contact</h3><p>{contact}</p></div>
+</body>
+</html>
+"""
+        st.download_button(
+            "Download Portfolio HTML",
+            html_code,
+            file_name="portfolio.html",
+            mime="text/html"
+        )
